@@ -98,11 +98,6 @@ class Event extends Model
         return $this->hasMany(BudgetItem::class)->orderBy('sort_order');
     }
 
-    public function investments(): HasMany
-    {
-        return $this->hasMany(Investment::class);
-    }
-
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
@@ -160,11 +155,6 @@ class Event extends Model
         return (string) $this->bookings()
             ->where('payment_status', PaymentStatus::Paid)
             ->sum('amount_paid');
-    }
-
-    public function totalInvested(): string
-    {
-        return (string) $this->investments()->sum('amount');
     }
 
     public function totalExpenses(): string

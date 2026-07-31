@@ -23,11 +23,11 @@ test('check-in staff cannot create events', function () {
         ->assertForbidden();
 });
 
-test('investor cannot manage finance pages without investment', function () {
-    $investor = User::factory()->investor()->create();
+test('check-in staff cannot manage finance pages', function () {
+    $user = User::factory()->checkIn()->create();
     $event = Event::factory()->published()->create();
 
-    $this->actingAs($investor)
+    $this->actingAs($user)
         ->get(route('events.budget', $event))
         ->assertForbidden();
 });
@@ -47,5 +47,6 @@ test('user role helpers match enum', function () {
     expect($admin->role)->toBe(UserRole::Admin)
         ->and($admin->canManageEvents())->toBeTrue()
         ->and($admin->canManageFinance())->toBeTrue()
-        ->and($admin->canCheckIn())->toBeTrue();
+        ->and($admin->canCheckIn())->toBeTrue()
+        ->and($admin->isStaff())->toBeTrue();
 });

@@ -61,8 +61,8 @@ new #[Layout('layouts.app')] #[Title('Event overview')] class extends Component
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
-            <flux:text>{{ __('Invested') }}</flux:text>
-            <flux:heading size="lg" class="mt-1">{{ $event->currency }} {{ number_format((float) $this->summary['invested'], 2) }}</flux:heading>
+            <flux:text>{{ __('To repay') }}</flux:text>
+            <flux:heading size="lg" class="mt-1">{{ $event->currency }} {{ number_format((float) $this->summary['owed'], 2) }}</flux:heading>
         </div>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <flux:text>{{ __('Expenses') }}</flux:text>

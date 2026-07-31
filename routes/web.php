@@ -30,14 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('manage/events/{event}', 'pages::events.show')->name('events.show');
     Route::livewire('manage/events/{event}/packages', 'pages::events.packages')->name('events.packages');
     Route::livewire('manage/events/{event}/budget', 'pages::events.budget')->name('events.budget');
-    Route::livewire('manage/events/{event}/investments', 'pages::events.investments')->name('events.investments');
     Route::livewire('manage/events/{event}/expenses', 'pages::events.expenses')->name('events.expenses');
     Route::livewire('manage/events/{event}/bookings', 'pages::events.bookings')->name('events.bookings');
     Route::livewire('manage/events/{event}/check-in', 'pages::events.check-in')->name('events.check-in');
     Route::get('manage/events/{event}/bookings/export', BookingExportController::class)->name('events.bookings.export');
-
-    Route::livewire('my-investments', 'pages::investments.index')->name('investments.index');
 });
 
 require __DIR__.'/settings.php';
-

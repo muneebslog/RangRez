@@ -3,7 +3,6 @@
 use App\Models\BudgetItem;
 use App\Models\Event;
 use App\Models\Expense;
-use App\Models\Investment;
 use App\Models\User;
 use App\Services\EventFinancialSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,11 +12,10 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-test('finance can add budget investment and expense', function () {
+test('finance can add budget and expenses with repayment tracking', function () {
     Storage::fake('public');
 
     $finance = User::factory()->finance()->create();
-    $investor = User::factory()->investor()->create();
     $event = Event::factory()->published()->create();
 
     Livewire::actingAs($finance)
@@ -31,20 +29,8 @@ test('finance can add budget investment and expense', function () {
     expect(BudgetItem::query()->count())->toBe(1);
 
     Livewire::actingAs($finance)
-        ->test('pages::events.investments', ['event' => $event])
-        ->set('user_id', $investor->id)
-        ->set('amount', '75000')
-        ->set('share_percent', '30')
-        ->set('invested_at', now()->format('Y-m-d\TH:i'))
-        ->set('proof', UploadedFile::fake()->create('proof.pdf', 100, 'application/pdf'))
-        ->call('save')
-        ->assertHasNoErrors();
-
-    expect(Investment::query()->count())->toBe(1);
-
-    Livewire::actingAs($finance)
         ->test('pages::events.expenses', ['event' => $event])
-        ->set('spent_by_user_id', $finance->id)
+        ->set('paid_by', 'company')
         ->set('category', 'Decor')
         ->set('description', 'Flowers')
         ->set('amount', '8000')
@@ -53,12 +39,59 @@ test('finance can add budget investment and expense', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Expense::query()->count())->toBe(1);
+    Livewire::actingAs($finance)
+        ->test('pages::events.expenses', ['event' => $event])
+        ->set('paid_by', 'person')
+        ->set('spent_by_user_id', $finance->id)
+        ->set('category', 'Transport')
+        ->set('description', 'Van hire')
+        ->set('amount', '2500')
+        ->set('spent_at', now()->format('Y-m-d\TH:i'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Expense::query()->count())->toBe(2);
 
     $summary = app(EventFinancialSummary::class)->for($event);
 
     expect((float) $summary['budget'])->toBe(50000.0)
-        ->and((float) $summary['invested'])->toBe(75000.0)
-        ->and((float) $summary['expenses'])->toBe(8000.0)
-        ->and((float) $summary['budget_variance'])->toBe(42000.0);
+        ->and((float) $summary['expenses'])->toBe(10500.0)
+        ->and((float) $summary['owed'])->toBe(2500.0)
+        ->and((float) $summary['budget_variance'])->toBe(39500.0);
+
+    $personalExpense = Expense::query()->where('paid_by_company', false)->first();
+
+    Livewire::actingAs($finance)
+        ->test('pages::events.expenses', ['event' => $event])
+        ->call('markRepaid', $personalExpense->id)
+        ->assertHasNoErrors();
+
+    expect($personalExpense->fresh()->repaid_at)->not->toBeNull()
+        ->and((float) app(EventFinancialSummary::class)->for($event)['owed'])->toBe(0.0);
+});
+
+test('person-paid expense requires spent by user', function () {
+    $finance = User::factory()->finance()->create();
+    $event = Event::factory()->published()->create();
+
+    Livewire::actingAs($finance)
+        ->test('pages::events.expenses', ['event' => $event])
+        ->set('paid_by', 'person')
+        ->set('spent_by_user_id', null)
+        ->set('category', 'Misc')
+        ->set('description', 'Supplies')
+        ->set('amount', '100')
+        ->set('spent_at', now()->format('Y-m-d\TH:i'))
+        ->call('save')
+        ->assertHasErrors(['spent_by_user_id']);
+});
+
+test('finance can export bookings csv', function () {
+    $finance = User::factory()->finance()->create();
+    $event = Event::factory()->published()->create();
+
+    $this->actingAs($finance)
+        ->get(route('events.bookings.export', $event))
+        ->assertOk()
+        ->assertHeader('content-disposition');
 });

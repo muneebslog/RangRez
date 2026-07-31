@@ -14,8 +14,8 @@ class EventFinancialSummary
      *     pending: int,
      *     checked_in: int,
      *     revenue: string,
-     *     invested: string,
      *     expenses: string,
+     *     owed: string,
      *     budget: string,
      *     budget_variance: string,
      *     profit_loss: string
@@ -31,8 +31,11 @@ class EventFinancialSummary
         $revenue = number_format((float) $event->bookings()
             ->where('payment_status', PaymentStatus::Paid)
             ->sum('amount_paid'), 2, '.', '');
-        $invested = number_format((float) $event->investments()->sum('amount'), 2, '.', '');
         $expenses = number_format((float) $event->expenses()->sum('amount'), 2, '.', '');
+        $owed = number_format((float) $event->expenses()
+            ->where('paid_by_company', false)
+            ->whereNull('repaid_at')
+            ->sum('amount'), 2, '.', '');
         $budget = number_format((float) $event->budgetItems()->sum('expected_amount'), 2, '.', '');
 
         return [
@@ -41,8 +44,8 @@ class EventFinancialSummary
             'pending' => $pending,
             'checked_in' => $checkedIn,
             'revenue' => $revenue,
-            'invested' => $invested,
             'expenses' => $expenses,
+            'owed' => $owed,
             'budget' => $budget,
             'budget_variance' => bcsub($budget, $expenses, 2),
             'profit_loss' => bcsub($revenue, $expenses, 2),

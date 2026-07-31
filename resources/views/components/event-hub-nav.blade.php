@@ -5,7 +5,6 @@
         ['label' => __('Overview'), 'route' => 'events.show', 'show' => true],
         ['label' => __('Packages'), 'route' => 'events.packages', 'show' => auth()->user()->canManageEvents()],
         ['label' => __('Budget'), 'route' => 'events.budget', 'show' => auth()->user()->canManageFinance()],
-        ['label' => __('Investments'), 'route' => 'events.investments', 'show' => auth()->user()->canManageFinance() || auth()->user()->isInvestor()],
         ['label' => __('Expenses'), 'route' => 'events.expenses', 'show' => auth()->user()->canManageFinance()],
         ['label' => __('Bookings'), 'route' => 'events.bookings', 'show' => auth()->user()->canManageFinance() || auth()->user()->canManageEvents()],
         ['label' => __('Check-in'), 'route' => 'events.check-in', 'show' => auth()->user()->canCheckIn()],

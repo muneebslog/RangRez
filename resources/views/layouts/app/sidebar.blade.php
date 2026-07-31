@@ -16,15 +16,9 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
 
-                    @if (auth()->user()->isStaff() || auth()->user()->isInvestor())
+                    @if (auth()->user()->isStaff())
                         <flux:sidebar.item icon="calendar-days" :href="route('events.index')" :current="request()->routeIs('events.*')" wire:navigate>
                             {{ __('Events') }}
-                        </flux:sidebar.item>
-                    @endif
-
-                    @if (auth()->user()->isInvestor() || auth()->user()->canManageFinance())
-                        <flux:sidebar.item icon="banknotes" :href="route('investments.index')" :current="request()->routeIs('investments.*')" wire:navigate>
-                            {{ __('My investments') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

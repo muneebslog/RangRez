@@ -40,7 +40,7 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     protected function casts(): array
     {
@@ -63,11 +63,6 @@ class User extends Authenticatable implements PasskeyUser
             : $initials;
     }
 
-    public function investments(): HasMany
-    {
-        return $this->hasMany(Investment::class);
-    }
-
     public function expensesSpent(): HasMany
     {
         return $this->hasMany(Expense::class, 'spent_by_user_id');
@@ -86,11 +81,6 @@ class User extends Authenticatable implements PasskeyUser
     public function isCheckIn(): bool
     {
         return $this->role === UserRole::CheckIn;
-    }
-
-    public function isInvestor(): bool
-    {
-        return $this->role === UserRole::Investor;
     }
 
     public function canManageEvents(): bool

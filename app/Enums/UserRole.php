@@ -7,7 +7,6 @@ enum UserRole: string
     case Admin = 'admin';
     case Finance = 'finance';
     case CheckIn = 'check_in';
-    case Investor = 'investor';
 
     public function label(): string
     {
@@ -15,7 +14,6 @@ enum UserRole: string
             self::Admin => 'Admin',
             self::Finance => 'Finance',
             self::CheckIn => 'Check-in',
-            self::Investor => 'Investor',
         };
     }
 
@@ -36,7 +34,7 @@ enum UserRole: string
 
     public function canViewReports(): bool
     {
-        return in_array($this, [self::Admin, self::Finance, self::Investor], true);
+        return in_array($this, [self::Admin, self::Finance], true);
     }
 
     public function isStaff(): bool

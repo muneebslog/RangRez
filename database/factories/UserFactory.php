@@ -80,11 +80,4 @@ class UserFactory extends Factory
             'role' => UserRole::CheckIn,
         ]);
     }
-
-    public function investor(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => UserRole::Investor,
-        ]);
-    }
 }

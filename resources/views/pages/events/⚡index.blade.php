@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Event;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -22,11 +21,8 @@ new #[Layout('layouts.app')] #[Title('Events')] class extends Component
     #[Computed]
     public function events()
     {
-        $user = Auth::user();
-
         return Event::query()
             ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
-            ->when($user->isInvestor(), fn ($q) => $q->whereHas('investments', fn ($iq) => $iq->where('user_id', $user->id)))
             ->latest('starts_at')
             ->paginate(10);
     }

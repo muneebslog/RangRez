@@ -54,7 +54,7 @@
                     </h1>
 
                     <p class="mt-6 max-w-xl text-lg leading-relaxed text-[#f4efe6]/75 sm:text-xl">
-                        {{ __('Plan budgets, track investments and expenses, sell early-bird tickets, and check guests in — all in one place.') }}
+                        {{ __('Plan budgets, track expenses and repayments, sell early-bird tickets, and check guests in — all in one place.') }}
                     </p>
 
                     <div class="mt-10 flex flex-wrap items-center gap-4">

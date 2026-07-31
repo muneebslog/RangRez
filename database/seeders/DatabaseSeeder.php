@@ -8,7 +8,6 @@ use App\Models\Booking;
 use App\Models\BudgetItem;
 use App\Models\Event;
 use App\Models\Expense;
-use App\Models\Investment;
 use App\Models\User;
 use App\Support\TicketCodeGenerator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -39,12 +38,6 @@ class DatabaseSeeder extends Seeder
         User::factory()->checkIn()->create([
             'name' => 'Check-in Staff',
             'email' => 'checkin@rangrez.test',
-            'password' => Hash::make('password'),
-        ]);
-
-        $investor = User::factory()->investor()->create([
-            'name' => 'Investor One',
-            'email' => 'investor@rangrez.test',
             'password' => Hash::make('password'),
         ]);
 
@@ -97,19 +90,19 @@ class DatabaseSeeder extends Seeder
             'expected_amount' => 120000,
         ]);
 
-        Investment::factory()->create([
+        Expense::factory()->companyPaid()->create([
             'event_id' => $event->id,
-            'user_id' => $investor->id,
-            'amount' => 100000,
-            'share_percent' => 40,
-        ]);
-
-        Expense::factory()->create([
-            'event_id' => $event->id,
-            'spent_by_user_id' => $finance->id,
             'category' => 'Marketing',
             'description' => 'Social ads',
             'amount' => 15000,
+        ]);
+
+        Expense::factory()->personPaid()->create([
+            'event_id' => $event->id,
+            'spent_by_user_id' => $finance->id,
+            'category' => 'Supplies',
+            'description' => 'Decor purchased by finance',
+            'amount' => 5000,
         ]);
 
         $generator = app(TicketCodeGenerator::class);

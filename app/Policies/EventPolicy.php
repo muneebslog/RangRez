@@ -9,20 +9,12 @@ class EventPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isStaff() || $user->isInvestor();
+        return $user->isStaff();
     }
 
     public function view(User $user, Event $event): bool
     {
-        if ($user->isStaff()) {
-            return true;
-        }
-
-        if ($user->isInvestor()) {
-            return $event->investments()->where('user_id', $user->id)->exists();
-        }
-
-        return false;
+        return $user->isStaff();
     }
 
     public function create(User $user): bool
@@ -57,14 +49,6 @@ class EventPolicy
 
     public function viewReports(User $user, Event $event): bool
     {
-        if ($user->canManageFinance() || $user->canManageEvents()) {
-            return true;
-        }
-
-        if ($user->isInvestor()) {
-            return $event->investments()->where('user_id', $user->id)->exists();
-        }
-
-        return false;
+        return $user->canManageFinance() || $user->canManageEvents();
     }
 }

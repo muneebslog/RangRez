@@ -15,6 +15,8 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
 
     public Event $event;
 
+    public string $paid_by = 'company';
+
     public ?int $spent_by_user_id = null;
 
     public string $category = '';
@@ -32,7 +34,13 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
         $this->authorize('manageFinance', $event);
         $this->event = $event;
         $this->spent_at = now()->format('Y-m-d\TH:i');
-        $this->spent_by_user_id = auth()->id();
+    }
+
+    public function updatedPaidBy(string $value): void
+    {
+        if ($value === 'company') {
+            $this->spent_by_user_id = null;
+        }
     }
 
     public function save(): void
@@ -40,7 +48,8 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
         $this->authorize('manageFinance', $this->event);
 
         $validated = $this->validate([
-            'spent_by_user_id' => ['nullable', 'exists:users,id'],
+            'paid_by' => ['required', 'in:company,person'],
+            'spent_by_user_id' => [$this->paid_by === 'company' ? 'nullable' : 'required', 'exists:users,id'],
             'category' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
@@ -48,22 +57,38 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
             'receipt' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf,webp'],
         ]);
 
+        $paidByCompany = $validated['paid_by'] === 'company';
         $path = $this->receipt?->store('expense-receipts', 'public');
 
         $this->event->expenses()->create([
-            'spent_by_user_id' => $validated['spent_by_user_id'],
+            'paid_by_company' => $paidByCompany,
+            'spent_by_user_id' => $paidByCompany ? null : $validated['spent_by_user_id'],
             'category' => $validated['category'],
             'description' => $validated['description'],
             'amount' => $validated['amount'],
             'spent_at' => $validated['spent_at'],
             'receipt_path' => $path,
+            'repaid_at' => null,
         ]);
 
         Flux::toast(variant: 'success', text: __('Expense recorded.'));
 
-        $this->reset(['category', 'description', 'amount', 'receipt']);
+        $this->reset(['category', 'description', 'amount', 'receipt', 'spent_by_user_id']);
+        $this->paid_by = 'company';
         $this->spent_at = now()->format('Y-m-d\TH:i');
-        $this->spent_by_user_id = auth()->id();
+    }
+
+    public function markRepaid(int $expenseId): void
+    {
+        $this->authorize('manageFinance', $this->event);
+
+        $expense = $this->event->expenses()->whereKey($expenseId)->firstOrFail();
+
+        abort_unless(! $expense->paid_by_company && $expense->repaid_at === null, 403);
+
+        $expense->update(['repaid_at' => now()]);
+
+        Flux::toast(variant: 'success', text: __('Expense marked as repaid.'));
     }
 
     public function delete(int $expenseId): void
@@ -90,25 +115,46 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
     {
         return (string) $this->event->expenses()->sum('amount');
     }
+
+    #[Computed]
+    public function owed(): string
+    {
+        return (string) $this->event->expenses()
+            ->where('paid_by_company', false)
+            ->whereNull('repaid_at')
+            ->sum('amount');
+    }
 }; ?>
 
 <div class="space-y-6">
     <x-event-hub-nav :event="$event" />
 
-    <flux:heading size="md">
-        {{ __('Total expenses') }}: {{ $event->currency }} {{ number_format((float) $this->total, 2) }}
-    </flux:heading>
+    <div class="flex flex-wrap gap-6">
+        <flux:heading size="md">
+            {{ __('Total expenses') }}: {{ $event->currency }} {{ number_format((float) $this->total, 2) }}
+        </flux:heading>
+        <flux:heading size="md">
+            {{ __('To repay') }}: {{ $event->currency }} {{ number_format((float) $this->owed, 2) }}
+        </flux:heading>
+    </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
         <form wire:submit="save" class="space-y-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <flux:heading size="md">{{ __('Record expense') }}</flux:heading>
 
-            <flux:select wire:model="spent_by_user_id" :label="__('Spent by')">
-                <flux:select.option value="">{{ __('Select person') }}</flux:select.option>
-                @foreach ($this->staff as $person)
-                    <flux:select.option value="{{ $person->id }}">{{ $person->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <flux:radio.group wire:model.live="paid_by" :label="__('Paid by')" variant="segmented">
+                <flux:radio value="company">{{ __('Company') }}</flux:radio>
+                <flux:radio value="person">{{ __('Person') }}</flux:radio>
+            </flux:radio.group>
+
+            @if ($paid_by === 'person')
+                <flux:select wire:model="spent_by_user_id" :label="__('Spent by')" required>
+                    <flux:select.option value="">{{ __('Select person') }}</flux:select.option>
+                    @foreach ($this->staff as $person)
+                        <flux:select.option value="{{ $person->id }}">{{ $person->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
 
             <flux:input wire:model="category" :label="__('Category')" required />
             <flux:input wire:model="description" :label="__('Description')" required />
@@ -130,15 +176,34 @@ new #[Layout('layouts.app')] #[Title('Expenses')] class extends Component
                             <flux:text class="mt-1">
                                 {{ $expense->category }} · {{ $event->currency }} {{ number_format((float) $expense->amount, 2) }}
                                 · {{ $expense->spent_at->format('M j, Y') }}
-                                @if ($expense->spentBy)
-                                    · {{ $expense->spentBy->name }}
-                                @endif
                             </flux:text>
+                            <div class="mt-2">
+                                @if ($expense->paid_by_company)
+                                    <flux:badge>{{ __('Company') }}</flux:badge>
+                                @elseif ($expense->isRepaid())
+                                    <flux:badge color="green">{{ __('Repaid') }}</flux:badge>
+                                    @if ($expense->spentBy)
+                                        <flux:text class="mt-1">{{ $expense->spentBy->name }} · {{ $expense->repaid_at->format('M j, Y') }}</flux:text>
+                                    @endif
+                                @else
+                                    <flux:badge color="amber">{{ __('Awaiting repayment') }}</flux:badge>
+                                    @if ($expense->spentBy)
+                                        <flux:text class="mt-1">{{ $expense->spentBy->name }}</flux:text>
+                                    @endif
+                                @endif
+                            </div>
                             @if ($expense->receiptUrl())
                                 <a href="{{ $expense->receiptUrl() }}" target="_blank" class="mt-2 inline-block text-sm underline">{{ __('View receipt') }}</a>
                             @endif
                         </div>
-                        <flux:button size="sm" variant="danger" wire:click="delete({{ $expense->id }})" wire:confirm="{{ __('Delete?') }}">{{ __('Delete') }}</flux:button>
+                        <div class="flex shrink-0 flex-col gap-2">
+                            @if ($expense->needsRepayment())
+                                <flux:button size="sm" variant="primary" wire:click="markRepaid({{ $expense->id }})" wire:confirm="{{ __('Mark as repaid?') }}">
+                                    {{ __('Mark repaid') }}
+                                </flux:button>
+                            @endif
+                            <flux:button size="sm" variant="danger" wire:click="delete({{ $expense->id }})" wire:confirm="{{ __('Delete?') }}">{{ __('Delete') }}</flux:button>
+                        </div>
                     </div>
                 </div>
             @empty

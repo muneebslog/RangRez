@@ -14,20 +14,24 @@ use Illuminate\Support\Facades\Storage;
  * @property int $id
  * @property int $event_id
  * @property int|null $spent_by_user_id
+ * @property bool $paid_by_company
  * @property string $category
  * @property string $description
  * @property string $amount
  * @property string|null $receipt_path
  * @property Carbon $spent_at
+ * @property Carbon|null $repaid_at
  */
 #[Fillable([
     'event_id',
     'spent_by_user_id',
+    'paid_by_company',
     'category',
     'description',
     'amount',
     'receipt_path',
     'spent_at',
+    'repaid_at',
 ])]
 class Expense extends Model
 {
@@ -38,7 +42,9 @@ class Expense extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'paid_by_company' => 'boolean',
             'spent_at' => 'datetime',
+            'repaid_at' => 'datetime',
         ];
     }
 
@@ -50,6 +56,16 @@ class Expense extends Model
     public function spentBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'spent_by_user_id');
+    }
+
+    public function needsRepayment(): bool
+    {
+        return ! $this->paid_by_company && $this->repaid_at === null;
+    }
+
+    public function isRepaid(): bool
+    {
+        return ! $this->paid_by_company && $this->repaid_at !== null;
     }
 
     public function receiptUrl(): ?string
