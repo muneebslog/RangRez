@@ -1,11 +1,21 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Http\Controllers\BookingExportController;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    $upcomingEvents = Event::query()
+        ->bookable()
+        ->orderBy('starts_at')
+        ->limit(6)
+        ->get();
+
+    return view('welcome', [
+        'upcomingEvents' => $upcomingEvents,
+        'featuredEvent' => $upcomingEvents->first(),
+    ]);
+})->name('home');
 
 Route::livewire('events/{event:slug}', 'pages::public.event-show')->name('public.events.show');
 Route::livewire('events/{event:slug}/book', 'pages::public.event-book')->name('public.events.book');
@@ -30,3 +40,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+
