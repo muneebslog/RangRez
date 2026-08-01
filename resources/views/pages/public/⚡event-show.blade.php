@@ -26,54 +26,59 @@ new #[Layout('layouts.public')] #[Title('Event')] class extends Component
 
 <div class="space-y-8">
     <div class="space-y-3">
-        <flux:heading size="xl">{{ $event->title }}</flux:heading>
-        <flux:text>
+        <p class="text-sm uppercase tracking-[0.25em] text-rr-accent">{{ __('Event') }}</p>
+        <h1 class="font-serif text-4xl tracking-tight text-rr-fg sm:text-5xl">{{ $event->title }}</h1>
+        <p class="text-rr-muted">
             {{ $event->starts_at->format('l, M j, Y · g:i A') }}
             @if ($event->venue)
                 · {{ $event->venue }}
             @endif
-        </flux:text>
+        </p>
         @if ($event->description)
-            <flux:text class="whitespace-pre-line">{{ $event->description }}</flux:text>
+            <p class="whitespace-pre-line text-rr-muted">{{ $event->description }}</p>
         @endif
     </div>
 
-    <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800">
+    <div class="rr-surface rounded-xl p-6">
         @if ($this->currentPackage)
-            <flux:heading size="lg">{{ $this->currentPackage->name }}</flux:heading>
-            <flux:text class="mt-2">
+            <h2 class="text-xl font-semibold text-rr-fg">{{ $this->currentPackage->name }}</h2>
+            <p class="mt-2 text-rr-muted">
                 {{ $this->currentPackage->type->label() }}
                 · {{ $event->currency }} {{ number_format((float) $this->currentPackage->price, 2) }}
-            </flux:text>
+            </p>
 
             @if ($event->isSoldOut() || $this->currentPackage->isSoldOut())
-                <flux:text class="mt-4 font-medium">{{ __('Sold out') }}</flux:text>
+                <p class="mt-4 font-medium text-rr-fg">{{ __('Sold out') }}</p>
             @else
                 <div class="mt-4">
-                    <flux:button :href="route('public.events.book', $event)" wire:navigate variant="primary">
+                    <a
+                        href="{{ route('public.events.book', $event) }}"
+                        wire:navigate
+                        class="rr-cta inline-flex rounded-md px-5 py-2.5 text-sm font-semibold transition"
+                    >
                         {{ __('Register now') }}
-                    </flux:button>
+                    </a>
                 </div>
             @endif
         @else
-            <flux:text>{{ __('Ticket sales are not open right now.') }}</flux:text>
+            <p class="text-rr-muted">{{ __('Ticket sales are not open right now.') }}</p>
         @endif
     </div>
 
-    <div class="space-y-2">
-        <flux:heading size="md">{{ __('Packages') }}</flux:heading>
+    <div class="space-y-3">
+        <h2 class="text-lg font-semibold text-rr-fg">{{ __('Packages') }}</h2>
         @foreach ($event->ticketPackages->where('is_active', true) as $package)
-            <div class="rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
-                <div class="font-medium">{{ $package->name }} — {{ $event->currency }} {{ number_format((float) $package->price, 2) }}</div>
-                <flux:text>
+            <div class="rr-surface rounded-lg px-4 py-3">
+                <div class="font-medium text-rr-fg">{{ $package->name }} — {{ $event->currency }} {{ number_format((float) $package->price, 2) }}</div>
+                <p class="text-sm text-rr-muted">
                     {{ $package->type->label() }}
                     @if ($package->sales_end_at)
                         · {{ __('until') }} {{ $package->sales_end_at->format('M j, Y g:i A') }}
                     @endif
                     @if ($package->isOnSale())
-                        · {{ __('Available now') }}
+                        · <span class="text-rr-accent">{{ __('Available now') }}</span>
                     @endif
-                </flux:text>
+                </p>
             </div>
         @endforeach
     </div>

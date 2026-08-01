@@ -3,8 +3,13 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <body class="relative isolate min-h-screen overflow-x-hidden bg-rr-bg text-rr-fg">
+        <div class="rr-atmosphere opacity-70">
+            <div class="rr-orb rr-orb-1 opacity-40"></div>
+            <div class="rr-orb rr-orb-2 opacity-30"></div>
+        </div>
+
+        <flux:header container class="border-b border-[var(--rr-border)] bg-[var(--rr-surface)]">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
 
             <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
@@ -16,6 +21,10 @@
             </flux:navbar>
 
             <flux:spacer />
+
+            <div class="me-2 hidden sm:block">
+                <x-theme-switcher compact />
+            </div>
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
                 <flux:tooltip :content="__('Search')" position="bottom">
@@ -45,7 +54,7 @@
         </flux:header>
 
         <!-- Mobile Menu -->
-        <flux:sidebar collapsible="mobile" sticky class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar collapsible="mobile" sticky class="lg:hidden border-e border-[var(--rr-border)] bg-[var(--rr-surface)]">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />

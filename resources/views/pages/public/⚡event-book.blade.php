@@ -87,25 +87,28 @@ new #[Layout('layouts.public')] #[Title('Book event')] class extends Component
 
 <div class="mx-auto max-w-lg space-y-6">
     <div>
-        <flux:heading size="xl">{{ __('Register for :event', ['event' => $event->title]) }}</flux:heading>
+        <p class="text-sm uppercase tracking-[0.25em] text-rr-accent">{{ __('Registration') }}</p>
+        <h1 class="mt-2 font-serif text-3xl tracking-tight text-rr-fg sm:text-4xl">
+            {{ __('Register for :event', ['event' => $event->title]) }}
+        </h1>
         @if ($this->package)
-            <flux:text class="mt-2">
+            <p class="mt-2 text-rr-muted">
                 {{ $this->package->name }} · {{ $event->currency }} {{ number_format((float) $this->package->price, 2) }}
-            </flux:text>
+            </p>
         @endif
     </div>
 
     @if (! $this->package)
-        <flux:text>{{ __('Ticket sales are not open right now.') }}</flux:text>
+        <p class="text-rr-muted">{{ __('Ticket sales are not open right now.') }}</p>
     @else
-        <form wire:submit="book" class="space-y-4">
+        <form wire:submit="book" class="rr-surface space-y-4 rounded-xl p-6">
             <flux:input wire:model="name" :label="__('Full name')" required autofocus />
             <flux:input wire:model="email" type="email" :label="__('Email')" required />
             <flux:input wire:model="phone" :label="__('Phone')" />
             <flux:input wire:model="payment_proof" type="file" :label="__('Payment proof (optional)')" />
-            <flux:text>{{ __('You can upload proof now or later. Staff will mark your payment once verified.') }}</flux:text>
+            <p class="text-sm text-rr-muted">{{ __('You can upload proof now or later. Staff will mark your payment once verified.') }}</p>
 
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <flux:button type="submit" variant="primary">{{ __('Complete registration') }}</flux:button>
                 <flux:button :href="route('public.events.show', $event)" wire:navigate variant="ghost">{{ __('Back') }}</flux:button>
             </div>

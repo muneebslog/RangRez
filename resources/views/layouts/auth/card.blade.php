@@ -3,21 +3,27 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-neutral-100 antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+    <body class="relative isolate min-h-screen overflow-x-hidden bg-rr-bg text-rr-fg antialiased">
+        <div class="rr-atmosphere">
+            <div class="rr-orb rr-orb-1"></div>
+            <div class="rr-orb rr-orb-2"></div>
+        </div>
+
+        <div class="relative flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+            <div class="absolute end-4 top-4 sm:end-6 sm:top-6">
+                <x-theme-switcher compact />
+            </div>
+
             <div class="flex w-full max-w-md flex-col gap-6">
                 <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
+                    <span class="flex size-9 items-center justify-center rounded-md bg-[var(--rr-accent)] text-[var(--rr-accent-fg)]">
+                        <x-app-logo-icon class="size-5 fill-current" />
                     </span>
-
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
+                    <span class="rr-brand-mark text-sm">{{ config('app.name', 'RangRez') }}</span>
                 </a>
 
-                <div class="flex flex-col gap-6">
-                    <div class="rounded-xl border bg-white dark:bg-stone-950 dark:border-stone-800 text-stone-800 shadow-xs">
-                        <div class="px-10 py-8">{{ $slot }}</div>
-                    </div>
+                <div class="rr-surface rounded-xl text-rr-fg shadow-xs">
+                    <div class="px-10 py-8">{{ $slot }}</div>
                 </div>
             </div>
         </div>

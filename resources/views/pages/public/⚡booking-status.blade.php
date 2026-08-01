@@ -37,47 +37,48 @@ new #[Layout('layouts.public')] #[Title('Booking status')] class extends Compone
 
 <div class="mx-auto max-w-lg space-y-6">
     <div>
-        <flux:heading size="xl">{{ __('Booking confirmed') }}</flux:heading>
-        <flux:text class="mt-2">{{ __('Save your ticket code for check-in.') }}</flux:text>
+        <p class="text-sm uppercase tracking-[0.25em] text-rr-accent">{{ __('Ticket') }}</p>
+        <h1 class="mt-2 font-serif text-3xl tracking-tight text-rr-fg sm:text-4xl">{{ __('Booking confirmed') }}</h1>
+        <p class="mt-2 text-rr-muted">{{ __('Save your ticket code for check-in.') }}</p>
     </div>
 
-    <div class="space-y-3 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800">
+    <div class="rr-surface space-y-4 rounded-xl p-6">
         <div>
-            <flux:text>{{ __('Event') }}</flux:text>
-            <flux:heading size="md">{{ $booking->event->title }}</flux:heading>
+            <p class="text-sm text-rr-muted">{{ __('Event') }}</p>
+            <div class="text-lg font-semibold text-rr-fg">{{ $booking->event->title }}</div>
         </div>
         <div>
-            <flux:text>{{ __('Ticket code') }}</flux:text>
-            <flux:heading size="lg" class="font-mono tracking-wider">{{ $booking->ticket_code }}</flux:heading>
+            <p class="text-sm text-rr-muted">{{ __('Ticket code') }}</p>
+            <div class="font-mono text-2xl font-semibold tracking-wider text-rr-accent">{{ $booking->ticket_code }}</div>
         </div>
         <div>
-            <flux:text>{{ __('Guest') }}</flux:text>
-            <div class="font-medium">{{ $booking->name }} · {{ $booking->email }}</div>
+            <p class="text-sm text-rr-muted">{{ __('Guest') }}</p>
+            <div class="font-medium text-rr-fg">{{ $booking->name }} · {{ $booking->email }}</div>
         </div>
         <div>
-            <flux:text>{{ __('Package') }}</flux:text>
-            <div class="font-medium">
+            <p class="text-sm text-rr-muted">{{ __('Package') }}</p>
+            <div class="font-medium text-rr-fg">
                 {{ $booking->ticketPackage->name }} ·
                 {{ $booking->event->currency }} {{ number_format((float) $booking->price, 2) }}
             </div>
         </div>
         <div>
-            <flux:text>{{ __('Payment status') }}</flux:text>
-            <div class="font-medium">{{ $booking->payment_status->label() }}</div>
+            <p class="text-sm text-rr-muted">{{ __('Payment status') }}</p>
+            <div class="font-medium text-rr-fg">{{ $booking->payment_status->label() }}</div>
         </div>
         @if ($booking->isCheckedIn())
             <div>
-                <flux:text>{{ __('Checked in') }}</flux:text>
-                <div class="font-medium">{{ $booking->checked_in_at->format('M j, Y g:i A') }}</div>
+                <p class="text-sm text-rr-muted">{{ __('Checked in') }}</p>
+                <div class="font-medium text-rr-fg">{{ $booking->checked_in_at->format('M j, Y g:i A') }}</div>
             </div>
         @endif
     </div>
 
     @if ($booking->payment_status === App\Enums\PaymentStatus::Pending)
-        <form wire:submit="uploadProof" class="space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
-            <flux:heading size="md">{{ __('Upload payment proof') }}</flux:heading>
+        <form wire:submit="uploadProof" class="rr-surface space-y-3 rounded-xl p-4">
+            <h2 class="text-lg font-semibold text-rr-fg">{{ __('Upload payment proof') }}</h2>
             @if ($booking->paymentProofUrl())
-                <a href="{{ $booking->paymentProofUrl() }}" target="_blank" class="text-sm underline">{{ __('Current proof') }}</a>
+                <a href="{{ $booking->paymentProofUrl() }}" target="_blank" class="text-sm text-rr-accent underline">{{ __('Current proof') }}</a>
             @endif
             <flux:input wire:model="payment_proof" type="file" :label="__('Proof file')" />
             <flux:button type="submit" variant="primary">{{ __('Upload') }}</flux:button>

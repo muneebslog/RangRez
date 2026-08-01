@@ -3,8 +3,13 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <body class="relative isolate min-h-screen overflow-x-hidden bg-rr-bg text-rr-fg antialiased">
+        <div class="rr-atmosphere opacity-80">
+            <div class="rr-orb rr-orb-1 opacity-50"></div>
+            <div class="rr-orb rr-orb-2 opacity-40"></div>
+        </div>
+
+        <flux:sidebar sticky collapsible="mobile" class="!bg-[var(--rr-surface)] border-e border-[var(--rr-border)]">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -26,14 +31,22 @@
 
             <flux:spacer />
 
+            <div class="hidden px-4 pb-3 lg:block">
+                <x-theme-switcher compact />
+            </div>
+
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
+        <flux:header class="border-b border-[var(--rr-border)] bg-[var(--rr-surface)] lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
+
+            <div class="me-2">
+                <x-theme-switcher compact />
+            </div>
 
             <flux:dropdown position="top" align="end">
                 <flux:profile
