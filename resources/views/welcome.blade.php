@@ -95,17 +95,20 @@
                             @foreach ($upcomingEvents as $event)
                                 <a
                                     href="{{ route('public.events.show', $event) }}"
-                                    class="group block border-t border-[var(--rr-border)] pt-4 transition hover:border-[var(--rr-accent)]"
+                                    class="rr-surface group flex flex-col gap-3 rounded-xl p-5 transition hover:border-[var(--rr-accent)] hover:ring-1 hover:ring-[var(--rr-accent)]/30"
                                 >
                                     <div class="text-xl font-medium text-rr-fg transition group-hover:text-rr-accent">
                                         {{ $event->title }}
                                     </div>
-                                    <p class="mt-2 text-sm text-rr-muted">
+                                    <p class="text-sm text-rr-muted">
                                         {{ $event->starts_at->format('M j, Y · g:i A') }}
-                                        @if ($event->venue)
-                                            · {{ $event->venue }}
-                                        @endif
                                     </p>
+                                    @if ($event->venue)
+                                        <p class="text-sm text-rr-muted">{{ $event->venue }}</p>
+                                    @endif
+                                    <span class="mt-auto pt-1 text-sm font-medium text-rr-accent opacity-0 transition group-hover:opacity-100">
+                                        {{ __('View event') }} →
+                                    </span>
                                 </a>
                             @endforeach
                         </div>

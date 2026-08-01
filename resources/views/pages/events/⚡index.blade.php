@@ -24,7 +24,7 @@ new #[Layout('layouts.app')] #[Title('Events')] class extends Component
         return Event::query()
             ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
             ->latest('starts_at')
-            ->paginate(10);
+            ->paginate(12);
     }
 }; ?>
 
@@ -44,35 +44,65 @@ new #[Layout('layouts.app')] #[Title('Events')] class extends Component
 
     <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search events...')" icon="magnifying-glass" />
 
-    <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
-        <table class="w-full text-start text-sm">
-            <thead class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50">
-                <tr>
-                    <th class="px-4 py-3 text-start font-medium">{{ __('Title') }}</th>
-                    <th class="px-4 py-3 text-start font-medium">{{ __('Date') }}</th>
-                    <th class="px-4 py-3 text-start font-medium">{{ __('Status') }}</th>
-                    <th class="px-4 py-3 text-start font-medium">{{ __('Capacity') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($this->events as $event)
-                    <tr class="border-b border-zinc-100 dark:border-zinc-800" wire:key="event-{{ $event->id }}">
-                        <td class="px-4 py-3">
-                            <a href="{{ route('events.show', $event) }}" class="font-medium hover:underline" wire:navigate>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        @forelse ($this->events as $event)
+            <a
+                href="{{ route('events.show', $event) }}"
+                wire:navigate
+                wire:key="event-{{ $event->id }}"
+                class="group block transition"
+            >
+                <flux:card class="h-full transition group-hover:border-[var(--rr-accent)] group-hover:ring-1 group-hover:ring-[var(--rr-accent)]/30">
+                    <div class="flex h-full flex-col gap-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <flux:heading size="md" class="group-hover:text-[var(--rr-accent)]">
                                 {{ $event->title }}
-                            </a>
-                        </td>
-                        <td class="px-4 py-3">{{ $event->starts_at->format('M j, Y g:i A') }}</td>
-                        <td class="px-4 py-3">{{ $event->status->label() }}</td>
-                        <td class="px-4 py-3">{{ $event->capacity ?? '—' }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-zinc-500">{{ __('No events found.') }}</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </flux:heading>
+                            <flux:badge
+                                size="sm"
+                                :color="match ($event->status) {
+                                    App\Enums\EventStatus::Draft => 'zinc',
+                                    App\Enums\EventStatus::Published => 'sky',
+                                    App\Enums\EventStatus::Live => 'lime',
+                                    App\Enums\EventStatus::Closed => 'zinc',
+                                }"
+                            >
+                                {{ $event->status->label() }}
+                            </flux:badge>
+                        </div>
+
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+                                <flux:icon.calendar-days class="size-4 shrink-0" />
+                                <span>{{ $event->starts_at->format('M j, Y · g:i A') }}</span>
+                            </div>
+
+                            @if ($event->venue)
+                                <div class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+                                    <flux:icon.map-pin class="size-4 shrink-0" />
+                                    <span class="truncate">{{ $event->venue }}</span>
+                                </div>
+                            @endif
+
+                            <div class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+                                <flux:icon.users class="size-4 shrink-0" />
+                                <span>{{ $event->capacity ? __('Capacity :count', ['count' => $event->capacity]) : __('Unlimited capacity') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-1 text-sm font-medium text-[var(--rr-accent)] opacity-0 transition group-hover:opacity-100">
+                            {{ __('Open event') }} →
+                        </div>
+                    </div>
+                </flux:card>
+            </a>
+        @empty
+            <flux:card class="sm:col-span-2 xl:col-span-3">
+                <div class="py-8 text-center">
+                    <flux:text>{{ __('No events found.') }}</flux:text>
+                </div>
+            </flux:card>
+        @endforelse
     </div>
 
     <div>

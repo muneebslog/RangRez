@@ -82,28 +82,33 @@ new #[Layout('layouts.app')] #[Title('Dashboard')] class extends Component
     <div class="space-y-3">
         <flux:heading size="lg">{{ __('Events') }}</flux:heading>
 
-        @forelse ($this->events as $event)
-            <a
-                href="{{ route('events.show', $event) }}"
-                wire:navigate
-                class="block rounded-xl border border-zinc-200 p-4 transition hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
-            >
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <flux:heading size="md">{{ $event->title }}</flux:heading>
-                        <flux:text class="mt-1">
-                            {{ $event->starts_at->format('M j, Y') }}
-                            · {{ $event->status->label() }}
-                            · {{ $event->bookings_count }} {{ __('booked') }}
-                            · {{ $event->paid_bookings_count }} {{ __('paid') }}
-                            · {{ $event->checked_in_count }} {{ __('checked in') }}
-                        </flux:text>
-                    </div>
-                    <flux:badge>{{ $event->status->label() }}</flux:badge>
-                </div>
-            </a>
-        @empty
-            <flux:text>{{ __('No events yet.') }}</flux:text>
-        @endforelse
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            @forelse ($this->events as $event)
+                <a
+                    href="{{ route('events.show', $event) }}"
+                    wire:navigate
+                    class="group block h-full transition"
+                >
+                    <flux:card class="h-full transition group-hover:border-[var(--rr-accent)] group-hover:ring-1 group-hover:ring-[var(--rr-accent)]/30">
+                        <div class="flex h-full flex-col gap-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <flux:heading size="md" class="group-hover:text-[var(--rr-accent)]">{{ $event->title }}</flux:heading>
+                                <flux:badge size="sm">{{ $event->status->label() }}</flux:badge>
+                            </div>
+                            <flux:text>
+                                {{ $event->starts_at->format('M j, Y') }}
+                            </flux:text>
+                            <flux:text class="text-sm">
+                                {{ $event->bookings_count }} {{ __('booked') }}
+                                · {{ $event->paid_bookings_count }} {{ __('paid') }}
+                                · {{ $event->checked_in_count }} {{ __('checked in') }}
+                            </flux:text>
+                        </div>
+                    </flux:card>
+                </a>
+            @empty
+                <flux:text class="sm:col-span-2 xl:col-span-3">{{ __('No events yet.') }}</flux:text>
+            @endforelse
+        </div>
     </div>
 </div>
